@@ -1,0 +1,48 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: fare-service
+  datasource:
+    url: jdbc:h2:mem:faredb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+jwt:
+  secret: ${JWT_SECRET:dGhpcyBpcyBhIHZlcnkgbG9uZyBhbmQgc2VjdXJlIHNlY3JldCBrZXkgZm9yIFJpZGVMaW5rMjAyNA==}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# Fare Rules (overridable via env vars)
+fare:
+  base: ${FARE_BASE:150.00}
+  per-km: ${FARE_PER_KM:80.00}
+  per-minute: ${FARE_PER_MINUTE:3.00}
+  surge-multiplier: ${FARE_SURGE:1.0}
+  currency: LKR
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.ridelink: DEBUG
