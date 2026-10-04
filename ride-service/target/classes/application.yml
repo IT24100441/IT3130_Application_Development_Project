@@ -1,0 +1,47 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: ride-service
+  datasource:
+    url: jdbc:h2:mem:ridedb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+jwt:
+  secret: ${JWT_SECRET:dGhpcyBpcyBhIHZlcnkgbG9uZyBhbmQgc2VjdXJlIHNlY3JldCBrZXkgZm9yIFJpZGVMaW5rMjAyNA==}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# Inter-service URLs
+service:
+  driver:
+    url: ${DRIVER_SERVICE_URL:http://localhost:8082}
+  fare:
+    url: ${FARE_SERVICE_URL:http://localhost:8084}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    com.ridelink: DEBUG
