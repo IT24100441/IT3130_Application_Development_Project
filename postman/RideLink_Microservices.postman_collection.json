@@ -1,0 +1,419 @@
+{
+  "info": {
+    "_postman_id": "a9b1c2d3-e4f5-4678-90ab-cdef12345678",
+    "name": "RideLink Microservices API Collection",
+    "description": "Production-ready Postman collection for RideLink (IT3130 Application Development).\nCovers all 4 core microservices with end-to-end happy paths and negative validation scenarios.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "account_url", "value": "http://localhost:8081", "type": "string" },
+    { "key": "driver_url", "value": "http://localhost:8082", "type": "string" },
+    { "key": "ride_url", "value": "http://localhost:8083", "type": "string" },
+    { "key": "fare_url", "value": "http://localhost:8084", "type": "string" },
+    { "key": "passenger_token", "value": "", "type": "string" },
+    { "key": "driver_token", "value": "", "type": "string" },
+    { "key": "admin_token", "value": "", "type": "string" },
+    { "key": "passenger_id", "value": "1", "type": "string" },
+    { "key": "driver_id", "value": "2", "type": "string" },
+    { "key": "ride_id", "value": "1", "type": "string" },
+    { "key": "receipt_number", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Account Service (Port 8081)",
+      "item": [
+        {
+          "name": "1.1 Register Passenger (Success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nimal Perera\",\n  \"email\": \"nimal@gmail.com\",\n  \"password\": \"Passenger@123\",\n  \"phone\": \"+94771112233\",\n  \"role\": \"PASSENGER\"\n}"
+            },
+            "url": { "raw": "{{account_url}}/api/auth/register", "host": ["{{account_url}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "1.2 Login Passenger (Auto-stores Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('passenger_token', jsonData.token);",
+                  "    pm.collectionVariables.set('passenger_id', jsonData.userId);",
+                  "    console.log('Stored passenger_token and passenger_id: ' + jsonData.userId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nimal@gmail.com\",\n  \"password\": \"Passenger@123\"\n}"
+            },
+            "url": { "raw": "{{account_url}}/api/auth/login", "host": ["{{account_url}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "1.3 Register Driver Account (Success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Sunil Silva\",\n  \"email\": \"sunil.driver@gmail.com\",\n  \"password\": \"Driver@12345\",\n  \"phone\": \"+94772223344\",\n  \"role\": \"DRIVER\"\n}"
+            },
+            "url": { "raw": "{{account_url}}/api/auth/register", "host": ["{{account_url}}"], "path": ["api", "auth", "register"] }
+          }
+        },
+        {
+          "name": "1.4 Login Driver (Auto-stores Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('driver_token', jsonData.token);",
+                  "    pm.collectionVariables.set('driver_id', jsonData.userId);",
+                  "    console.log('Stored driver_token and driver_id: ' + jsonData.userId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sunil.driver@gmail.com\",\n  \"password\": \"Driver@12345\"\n}"
+            },
+            "url": { "raw": "{{account_url}}/api/auth/login", "host": ["{{account_url}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "1.5 Get Passenger Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "url": { "raw": "{{account_url}}/api/users/profile", "host": ["{{account_url}}"], "path": ["api", "users", "profile"] }
+          }
+        },
+        {
+          "name": "1.6 Negative - Login Bad Password (401 Unauthorized)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nimal@gmail.com\",\n  \"password\": \"WrongPassword!\"\n}"
+            },
+            "url": { "raw": "{{account_url}}/api/auth/login", "host": ["{{account_url}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "1.7 Negative - Register Duplicate Email (409 Conflict)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nimal Imposter\",\n  \"email\": \"nimal@gmail.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"+94779998877\",\n  \"role\": \"PASSENGER\"\n}"
+            },
+            "url": { "raw": "{{account_url}}/api/auth/register", "host": ["{{account_url}}"], "path": ["api", "auth", "register"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Driver & Vehicle Service (Port 8082)",
+      "item": [
+        {
+          "name": "2.1 Register Driver Operational Profile & Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{driver_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"licenseNumber\": \"B1234567\",\n  \"serviceArea\": \"Colombo Metropol\",\n  \"vehicle\": {\n    \"plateNumber\": \"CAB-4589\",\n    \"model\": \"Toyota Prius\",\n    \"color\": \"Pearl White\",\n    \"type\": \"SEDAN\",\n    \"capacity\": 4\n  }\n}"
+            },
+            "url": { "raw": "{{driver_url}}/api/drivers/profile", "host": ["{{driver_url}}"], "path": ["api", "drivers", "profile"] }
+          }
+        },
+        {
+          "name": "2.2 Admin Verify Driver Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": { "raw": "{{driver_url}}/api/drivers/admin/verify/{{driver_id}}", "host": ["{{driver_url}}"], "path": ["api", "drivers", "admin", "verify", "{{driver_id}}"] }
+          }
+        },
+        {
+          "name": "2.3 Update Driver Simulated Location",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{driver_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 6.9271,\n  \"longitude\": 79.8612\n}"
+            },
+            "url": { "raw": "{{driver_url}}/api/drivers/location", "host": ["{{driver_url}}"], "path": ["api", "drivers", "location"] }
+          }
+        },
+        {
+          "name": "2.4 Toggle Driver Availability - ONLINE",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{driver_token}}" }
+            ],
+            "url": { "raw": "{{driver_url}}/api/drivers/availability?status=ONLINE", "host": ["{{driver_url}}"], "path": ["api", "drivers", "availability"], "query": [{ "key": "status", "value": "ONLINE" }] }
+          }
+        },
+        {
+          "name": "2.5 Query Available Nearby Drivers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "url": { "raw": "{{driver_url}}/api/drivers/available?lat=6.9275&lon=79.8615&radiusKm=10.0", "host": ["{{driver_url}}"], "path": ["api", "drivers", "available"], "query": [
+              { "key": "lat", "value": "6.9275" },
+              { "key": "lon", "value": "79.8615" },
+              { "key": "radiusKm", "value": "10.0" }
+            ]}
+          }
+        },
+        {
+          "name": "2.6 Negative - Passenger Accessing Driver Location (403 Forbidden)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 6.9271,\n  \"longitude\": 79.8612\n}"
+            },
+            "url": { "raw": "{{driver_url}}/api/drivers/location", "host": ["{{driver_url}}"], "path": ["api", "drivers", "location"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Ride Management Service (Port 8083)",
+      "item": [
+        {
+          "name": "3.1 Request a Ride (Triggers Feign to Driver Service)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.rideId) {",
+                  "    pm.collectionVariables.set('ride_id', jsonData.rideId);",
+                  "    console.log('Stored ride_id: ' + jsonData.rideId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pickupAddress\": \"Galle Face Green, Colombo 03\",\n  \"pickupLatitude\": 6.9271,\n  \"pickupLongitude\": 79.8612,\n  \"destinationAddress\": \"Bandaranaike International Airport, Katunayake\",\n  \"destinationLatitude\": 7.1800,\n  \"destinationLongitude\": 79.8845\n}"
+            },
+            "url": { "raw": "{{ride_url}}/api/rides", "host": ["{{ride_url}}"], "path": ["api", "rides"] }
+          }
+        },
+        {
+          "name": "3.2 Driver Accepts Ride (Status -> ACCEPTED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{driver_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"cancellationReason\": null\n}" },
+            "url": { "raw": "{{ride_url}}/api/rides/{{ride_id}}/accept", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{ride_id}}", "accept"] }
+          }
+        },
+        {
+          "name": "3.3 Driver Starts Ride (Status -> IN_PROGRESS)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{driver_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"cancellationReason\": null\n}" },
+            "url": { "raw": "{{ride_url}}/api/rides/{{ride_id}}/start", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{ride_id}}", "start"] }
+          }
+        },
+        {
+          "name": "3.4 Driver Completes Ride (Triggers Feign to Fare Service)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{driver_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"cancellationReason\": null\n}" },
+            "url": { "raw": "{{ride_url}}/api/rides/{{ride_id}}/complete", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{ride_id}}", "complete"] }
+          }
+        },
+        {
+          "name": "3.5 Get Ride By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "url": { "raw": "{{ride_url}}/api/rides/{{ride_id}}", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{ride_id}}"] }
+          }
+        },
+        {
+          "name": "3.6 Negative - Invalid Transition: Complete an Accepted Ride (409 Conflict)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{driver_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"cancellationReason\": null\n}" },
+            "url": { "raw": "{{ride_url}}/api/rides/{{ride_id}}/complete", "host": ["{{ride_url}}"], "path": ["api", "rides", "{{ride_id}}", "complete"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Fare & Payment Service (Port 8084)",
+      "item": [
+        {
+          "name": "4.1 Estimate Fare Prior to Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"distanceKm\": 28.5,\n  \"estimatedDurationMinutes\": 45\n}"
+            },
+            "url": { "raw": "{{fare_url}}/api/fares/estimate", "host": ["{{fare_url}}"], "path": ["api", "fares", "estimate"] }
+          }
+        },
+        {
+          "name": "4.2 Get Fare Breakdown by Ride ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "url": { "raw": "{{fare_url}}/api/fares/ride/{{ride_id}}", "host": ["{{fare_url}}"], "path": ["api", "fares", "ride", "{{ride_id}}"] }
+          }
+        },
+        {
+          "name": "4.3 Process Simulated Payment - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.receiptNumber) {",
+                  "    pm.collectionVariables.set('receipt_number', jsonData.receiptNumber);",
+                  "    console.log('Stored receipt_number: ' + jsonData.receiptNumber);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rideId\": {{ride_id}},\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"cardNumber\": \"4111222233334444\",\n  \"cvv\": \"123\"\n}"
+            },
+            "url": { "raw": "{{fare_url}}/api/payments/process", "host": ["{{fare_url}}"], "path": ["api", "payments", "process"] }
+          }
+        },
+        {
+          "name": "4.4 Retrieve Digital Receipt by Ride ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "url": { "raw": "{{fare_url}}/api/receipts/ride/{{ride_id}}", "host": ["{{fare_url}}"], "path": ["api", "receipts", "ride", "{{ride_id}}"] }
+          }
+        },
+        {
+          "name": "4.5 Negative - Payment Decline Simulation (422 Unprocessable)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rideId\": 999,\n  \"paymentMethod\": \"CREDIT_CARD\",\n  \"cardNumber\": \"4000000000000002\",\n  \"cvv\": \"999\"\n}"
+            },
+            "url": { "raw": "{{fare_url}}/api/payments/process", "host": ["{{fare_url}}"], "path": ["api", "payments", "process"] }
+          }
+        },
+        {
+          "name": "4.6 Negative - Duplicate Payment on Paid Ride (409 Conflict)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{passenger_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rideId\": {{ride_id}},\n  \"paymentMethod\": \"CASH\"\n}"
+            },
+            "url": { "raw": "{{fare_url}}/api/payments/process", "host": ["{{fare_url}}"], "path": ["api", "payments", "process"] }
+          }
+        }
+      ]
+    }
+  ]
+}
